@@ -131,3 +131,27 @@ func updateSilence(cfg ackConfig, sil Silence) error {
 		Msg("Silence updated")
 	return nil
 }
+
+// deleteSilenceNotUsed 删除当前没有被任何报警所使用的silence
+func deleteSilenceNotUsed(cfg ackConfig, sil Silence) error {
+	uri := joinURI(cfg.alertmanagerURI, "api/v2/silence/") + sil.ID
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.alertmanagerTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, uri, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := newAMClient(cfg.alertmanagerURI)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("delete silence whitch is not used faield, silenceid = %s", sil.ID)
+	}
+	return nil
+}

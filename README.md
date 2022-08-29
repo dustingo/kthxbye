@@ -119,3 +119,8 @@ reality more than one execution per 5 minutes is required, but it means that
 small amount of downtime that might be needed to restart kthxbye on another
 k8s/mesos node (for cloud deployments) if the primary crashes is likely to be
 invisible to the user.
+
+
+## fork 更新
+1. 由于业务需要，删除了查询Silence时需要指定comment的要求，现在查询时会对所有的Silence进行监控。  
+2. 添加了删除Silence的方法，现在在查询到Silence没有作用于任何报警之后，将其设置为Expired。虽然在某些情况下可能会导致报警断断续续重复，但是在当前个人的业务需求下能够避免大量的人工操作，并且在一定情况下也能够反应业务的稳定情况以及可能在修复之后出现重复问题没有及时通知。

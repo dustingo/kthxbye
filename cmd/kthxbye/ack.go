@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -24,9 +23,10 @@ func extendACKs(cfg ackConfig) error {
 
 	silencesExpiring := 0
 	for _, sil := range silences {
-		if !strings.HasPrefix(sil.Comment, cfg.extendWithPrefix) {
-			continue
-		}
+		// 这里修改为不去识别前缀，默认处理所有的静默规则
+		// if !strings.HasPrefix(sil.Comment, cfg.extendWithPrefix) {
+		// 	continue
+		// }
 
 		usedBy := 0
 		for _, alert := range alerts {
@@ -63,7 +63,13 @@ func extendACKs(cfg ackConfig) error {
 				Str("id", sil.ID).
 				Strs("matchers", silenceMatchersToLogField(sil)).
 				Msg("Silence is not used by any alert, letting it expire")
-			silencesExpiring++
+			err = deleteSilenceNotUsed(cfg, sil)
+			if err != nil {
+				log.Error().
+					Msg(err.Error())
+				silencesExpiring++
+			}
+			//silencesExpiring++
 		}
 	}
 	metricsSilencesExpiring.Set(float64(silencesExpiring))
